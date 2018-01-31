@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<scenario name="REGISTER">
+  <send>
+    <![CDATA[
+
+      REGISTER sip:Registrar.[field0] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      Max-Forwards: 70
+      From: <sip:[service]@[field0]>;tag=[call_number]
+      To: <sip:[service]@[field0]>
+      Call-ID: [call_id]
+      CSeq: 1 REGISTER
+      Contact: <sip:[service]@[local_ip]:[local_port];transport=[transport];sos>;+sip.instance="<urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6>"
+      Authorization: Digest username="TestUser@[field0]",realm="[field0]",uri="sip:[remote_host]:[remote_port]",nonce="",response=""
+      Expires: 0
+      Allow: INVITE, ACK, CANCEL, BYE, MESSAGE, OPTIONS, NOTIFY, PRACK, UPDATE, REFER
+      Accept: application/sdp, application/vnd.etsi.aoc+xml, application/comm-div-info-ntfy+xml, application/comm-div-info-ntfy+xml
+      P-Access-Network-Info: ADSL2+;utran-cell-id-3gpp=00000000
+      Supported: gruu, path
+      Require: gruu, path
+      User-Agent: IM-client/OMA1.0 Boghe/v2.0.112.744
+      Content-Length: 0
+
+        ]]>
+  </send>
+
+
+  <recv response="200"
+        crlf="true">
+  </recv>
+
+<pause milliseconds="1000"/>
+
+</scenario>
+

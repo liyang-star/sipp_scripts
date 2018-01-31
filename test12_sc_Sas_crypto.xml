@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<!-- This program is free software; you can redistribute it and/or      -->
+<!-- modify it under the terms of the GNU General Public License as     -->
+<!-- published by the Free Software Foundation; either version 2 of the -->
+<!-- License, or (at your option) any later version.                    -->
+<!--                                                                    -->
+<!-- This program is distributed in the hope that it will be useful,    -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of     -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      -->
+<!-- GNU General Public License for more details.                       -->
+<!--                                                                    -->
+<!-- You should have received a copy of the GNU General Public License  -->
+<!-- along with this program; if not, write to the                      -->
+<!-- Free Software Foundation, Inc.,                                    -->
+<!-- 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA             -->
+<!--                                                                    -->
+<!--                 Sipp default 'uac' scenario.                       -->
+<!--                                                                    -->
+<!--
+      Test: AVVBF
+      Endpoint: Caller
+      Crypto = No
+      Sequence
+         1) Audio & V-main & V-slides & BFCP & FECC
+-->
+
+<scenario name="Basic Sipstone UAC">
+  <send retrans="500">
+    <![CDATA[
+
+      INVITE sip:[service]@sonusnet.com:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: <sip:6203215002@[local_ip]:[local_port];otg=TG1>;tag=[call_number]
+      To: sut <sip:[service]@[remote_ip]:[remote_port]>
+      Call-ID: [call_id]
+      Cseq: 1 INVITE
+      Contact: <sip:6203215002@[local_ip]:[local_port]>
+      Max-Forwards: 70
+      Subject: Performance Test
+      P-Charging-Vector: icid-value=3cbeb620-0001-1000-00-0000-10-6b-00-02-20;icid-generated-at=10.10.10.10;orig-ioi=1234;term-ioi=4567
+      Record-Route: <sip:6203215002@[local_ip]:[local_port];lr;x-ep-index=1>
+      Route: <sip:6203215002@[local_ip];lr;x-ep-index=1>
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=user1 53655765 2353687637 IN IP4 [media_ip]
+      s=-
+      c=IN IP4 [media_ip]
+      t=0 0
+      b=AS:500
+      m=audio [media_port] RTP/AVP 0
+       a=sendrecv
+       a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:LSxrJ61X+3F93QZxhzmXDkYTgbQug4588tbDj3JX 
+      m=video [media_port+2] RTP/AVP 31
+       a=rtpmap:31 H261/90000
+       a=sendrecv
+       a=content:main
+       a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:LSxrJ61X+3F93QZxhzmXDkYTgbQug4588tbDj3JX
+      m=video [media_port+4] RTP/AVP 34
+       a=rtpmap:34 H263/90000
+       a=sendrecv
+       a=content:slides
+       a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:LSxrJ61X+3F93QZxhzmXDkYTgbQug4588tbDj3JX
+      m=application 1024 UDP/BFCP * 
+       a=floorctrl:s-only
+       a=confid:4321
+       a=userid:1234
+       a=floorid:1 m-stream:10
+       a=floorid:2 m-stream:11
+      m=application 1026 RTP/AVP 100
+       a=rtpmap:100 H224/4800
+       a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:LSxrJ61X+3F93QZxhzmXDkYTgbQug4588tbDj3JX
+    ]]>
+  </send>
+<!--  
+-->
+  <recv response="100" optional="true"> </recv>
+  <recv response="180" optional="true"> </recv>
+  <recv response="182" optional="true"> </recv>
+  <recv response="183" optional="true"> </recv>
+
+  <recv response="200" rtd="true"> </recv>
+  <send>
+    <![CDATA[
+
+      ACK sip:[service]@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: 6203215002<sip:6203215002@[local_ip]:[local_port]>;tag=[call_number]
+      To: sut <sip:[service]@[remote_ip]:[remote_port]>[peer_tag_param]
+      Call-ID: [call_id]
+      Cseq: 1 ACK
+      Contact: <sip:6203215002@[local_ip]:[local_port]>
+      Max-Forwards: 70
+      Subject: Performance Test
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+   <!-- Send some date to the other end -->
+  <pause milliseconds="500"/>
+  <pause milliseconds="2500"/>   
+  <pause/>
+
+  <pause/>
+
+  <!-- 5) Hang up the call -->
+  <send retrans="500">
+    <![CDATA[
+
+      BYE sip:[service]@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: 6203215002<sip:6203215002@[local_ip]:[local_port]>;tag=[call_number]
+      To: sut <sip:[service]@[remote_ip]:[remote_port]>[peer_tag_param]
+      Call-ID: [call_id]
+      Cseq: 4 BYE
+      Contact: <sip:6203215002@[local_ip]:[local_port]>
+      Max-Forwards: 70
+      Subject: Performance Test
+      Content-Length: 0
+
+    ]]>
+  </send>
+  <recv response="200" crlf="true">  </recv>
+
+  <!-- definition of the response time repartition table (unit is ms)   -->
+  <ResponseTimeRepartition value="100, 1000, 3000"/>
+
+  <!-- definition of the call length repartition table (unit is ms)     -->
+  <CallLengthRepartition value="10, 50, 100, 500, 1000, 5000, 10000"/>
+
+</scenario>
+
